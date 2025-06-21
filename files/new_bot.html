@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amrita Vishwa Vidyapeetham Chatbot</title>
+<style>
+.chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif; 
+    display: none; 
+    background-color: #f3e8ea; 
+}
+.chatbot-header {
+    background-color:#b80d4f; 
+    color: white;
+    padding: 10px;
+    justify-content: space-around;
+    text-align: center;
+    align-items: center;
+}
+
+.chatbot-header img {
+    border-radius: 20%;
+}
+.align {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+.chatbot-messages {
+    padding: 10px;
+    height: 300px;
+    overflow-y: auto;
+    max-height: 300px; 
+}
+.chatbot-input {
+    padding: 10px;
+    background-color: #b80d4f; 
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+input[type="text"] {
+    flex-grow: 1; 
+    padding: 5px;
+    border: 1px solid #ccc; 
+    border-radius: 5px;
+    margin-right: 10px;
+    font-family: 'Poppins', sans-serif; 
+    font-size: 16px;
+    color: #333; 
+    background-color: #fff; 
+    outline: none; 
+}
+button {
+    background-color: #f5e500; 
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif; 
+    font-size: 16px;
+}
+button:hover {
+    border-radius: 8px;
+}
+.chat-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #de5935; 
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 9999; 
+}
+.bot-reply {
+    margin: 10px 10px 10px 0; 
+    padding: 10px;
+    background-color: #eca0b4; 
+    font-weight: 200;
+    border: 1px solid #ccc; 
+    border-radius: 5px 20px 20px 20px;
+    color: #333; 
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+}
+.user-input {
+    margin: 10px 10px 10px 0; 
+    padding: 10px;
+    font-weight: 200;
+    background-color: #ffcfc5; 
+    border: 1px solid #ccc; 
+    border-radius: 20px 20px 5px 20px;
+    color: #333; 
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    word-wrap: break-word; 
+    overflow-wrap: break-word;
+    display: inline-block;
+}
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    border-radius: 10px;
+    padding: 5px; 
+}
+.action-button {
+    background-color: #ffffff;
+    color: #b80d4f;
+    border: 2px solid #b80d4f; 
+    padding: 6px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin:  3px;
+}
+.action-button:hover {
+    background-color: #e0d500;
+    transform: scale(1.05);
+}
+</style>
+</head>
+<body>
+<div class="chat-icon" id="chat-icon" onclick="toggleChatbot()">💬</div>
+<div class="chatbot-container" id="chatbot-container">
+    <div class="chatbot-header">
+        <div class="align">
+            <img src="th.jpeg" height="30px" width="30px">
+            <b>Amrita Vishwa Vidyapeetham</b>
+        </div>
+    </div>
+    <div class="chatbot-messages"></div>
+    <div class="chatbot-input">
+        <input type="text" id="messageInput" placeholder="Ask me anything..." oninput="resizeInput()" onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+<script>
+var isGreetingDisplayed = false;
+
+// Toggle chatbot visibility
+function toggleChatbot() {
+    var chatbotContainer = document.getElementById('chatbot-container');
+    var chatIcon = document.getElementById('chat-icon');
+    if (chatbotContainer.style.display === 'block') {
+        chatbotContainer.style.display = 'none';
+        chatIcon.style.display = 'block';
+        document.removeEventListener('click', closeChatbotOutsideClick);
+    } else {
+        chatbotContainer.style.display = 'block';
+        chatIcon.style.display = 'none';
+        document.addEventListener('click', closeChatbotOutsideClick);
+        if (!isGreetingDisplayed) {
+            displayChatbotMessage('Hi, How can I help you?', true);
+            displayButtons();
+            isGreetingDisplayed = true;
+        }
+    }
+}
+
+// Function to close chatbot when clicked outside the container
+function closeChatbotOutsideClick(event) {
+    var chatbotContainer = document.getElementById('chatbot-container');
+    var chatIcon = document.getElementById('chat-icon');
+    if (!chatbotContainer.contains(event.target) && event.target !== chatIcon) {
+        chatbotContainer.style.display = 'none';
+        chatIcon.style.display = 'block';
+        document.removeEventListener('click', closeChatbotOutsideClick);
+    }
+}
+function handleKeyPress(event) {
+    if (event.keyCode === 13) {
+        sendMessage(); 
+    }
+}
+function sendMessage() {
+      var messageInput = document.querySelector('.chatbot-input input[type="text"]');
+      var message = messageInput.value.trim();
+      if (message !== '') {
+        displayChatbotMessage(message);
+
+        // API call to get the response from the Flask server
+        fetch('http://localhost:5000/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+          displayChatbotMessage(data.response, true);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          displayChatbotMessage("I'm sorry, something went wrong. Please try again later.", true);
+        });
+        messageInput.value = '';
+      }
+    }
+// Function to display chatbot's message in the UI
+function displayChatbotMessage(message, isBot = false) {
+    var messagesContainer = document.querySelector('.chatbot-messages');
+    var messageElement = document.createElement('div');
+    if (isBot) {
+        messageElement.classList.add('bot-reply');
+        var botIcon = document.createElement('span');
+        botIcon.textContent = '🤖';
+        botIcon.style.marginRight = '5px';
+        messageElement.appendChild(botIcon);
+    } else {
+        messageElement.classList.add('user-input');
+        var profileIcon = document.createElement('span');
+        profileIcon.textContent = '👤';
+        profileIcon.style.marginRight = '5px';
+        messageElement.appendChild(profileIcon);
+    }
+    var messageText = document.createElement('span');
+    messageText.innerHTML = message;
+    messageElement.appendChild(messageText);
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Function to display action buttons below the greeting message
+function displayButtons() {
+    var messagesContainer = document.querySelector('.chatbot-messages');
+    var buttonsContainer = document.createElement('div');
+    buttonsContainer.classList.add('buttons-container');
+
+    var aboutButton = document.createElement('button');
+    aboutButton.classList.add('action-button');
+    aboutButton.textContent = 'About Amrita University';
+    aboutButton.onclick = function() {
+        displayChatbotMessage('About Amrita');
+        sendMessageFromButton('About Amrita');
+    };
+
+    var admissionButton = document.createElement('button');
+    admissionButton.classList.add('action-button');
+    admissionButton.textContent = 'Admission';
+    admissionButton.onclick = function() {
+        displayChatbotMessage('Admission');
+        sendMessageFromButton('Admission');
+    };
+
+    var contactButton = document.createElement('button');
+    contactButton.classList.add('action-button');
+    contactButton.textContent = 'Contact';
+    contactButton.onclick = function() {
+        displayChatbotMessage('Contact');
+        sendMessageFromButton('Contact');
+    };
+
+    buttonsContainer.appendChild(aboutButton);
+    buttonsContainer.appendChild(admissionButton);
+    buttonsContainer.appendChild(contactButton);
+
+    messagesContainer.appendChild(buttonsContainer);
+}
+function sendMessageFromButton(message) {
+    if (message.toLowerCase() === 'about amrita') {
+        displayChatbotMessage('Amrita Vishwa Vidyapeetham is a top ranked, multi-campus university in India. It offers a wide range of undergraduate, postgraduate and doctoral programs. The university is known for its research and focus on social responsibility. Learn more at <a href="https://www.amrita.edu">Amrita Vishwa Vidyapeetham</a>.', true);
+    } else if (message.toLowerCase() === 'admission') {
+        displayChatbotMessage('Amrita Vishwa Vidyapeetham offers admissions to various undergraduate, postgraduate and doctoral programs. For more information on the admissions process, please contact the university. visit <a href="https://www.amrita.edu/admissions">Admissions at Amrita</a>.', true);
+    } else if (message.toLowerCase() === 'contact') {
+        displayChatbotMessage('You can contact us at <a href="https://www.amrita.edu/contact">Contact Amrita</a>.', true);
+    }
+}
+
+function resizeInput() {
+    var input = document.getElementById('messageInput');
+    var containerWidth = document.querySelector('.chatbot-input').offsetWidth;
+    var inputLength = input.value.length;
+    var minWidth = 100; 
+    var maxWidth = containerWidth - 110; 
+    var fontSize = parseFloat(window.getComputedStyle(input, null).getPropertyValue('font-size'));
+    var padding = parseFloat(window.getComputedStyle(input, null).getPropertyValue('padding-left')) +
+                  parseFloat(window.getComputedStyle(input, null).getPropertyValue('padding-right'));
+    var textWidth = (inputLength + 1) * (fontSize / 2) + padding;
+    function resizeTextarea() {
+        var textarea = document.getElementById('inputTextarea');
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px'; 
+    }
+    document.getElementById('inputTextarea').addEventListener('input', resizeTextarea);
+}
+
+</script>
+
+</body>
+</html>

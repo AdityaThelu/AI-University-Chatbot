@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amrita Vishwa Vidyapeetham Chatbot</title>
+<!-- <link rel="Style" href="style.css"> -->
+<style>
+
+  /* Chatbot container */
+  .chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif; /* Use Google Font 'Poppins' */
+    display: none; /* Initially hide the chatbot container */
+    background-color: #f3e8ea; /* Attractive teal background */
+  }
+
+  /* Chatbot header */
+  .chatbot-header {
+    background-color:#b80d4f; /* Complementary orange header */
+    color: white;
+    padding: 10px;
+    justify-content: space-around;
+    text-align: center;
+    align-items: center;
+  }
+
+  .chatbot-header img{
+    border-radius: 20%;
+  }
+
+  .align {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  /* Chatbot messages */
+  .chatbot-messages {
+    padding: 10px;
+    height: 300px;
+    overflow-y: auto;
+    max-height: 300px; /* Set max height for messages to enable scrolling */
+  }
+
+  /* User input area */
+  .chatbot-input {
+    padding: 10px;
+    background-color: #b80d4f; /* Bright yellow input area */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Input field */
+  input[type="text"] {
+    flex-grow: 1; /* Take remaining space */
+    padding: 5px;
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 5px;
+    margin-right: 10px;
+    font-family: 'Poppins', sans-serif; /* Use Google Font 'Poppins' */
+    font-size: 16px;
+    color: #333; /* Text color */
+    background-color: #fff; /* White background */
+    outline: none; /* Remove outline */
+  }
+
+  /* Send button */
+  button {
+    background-color: #f5e500; /* Matching teal button */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif; /* Use Google Font 'Poppins' */
+    font-size: 16px;
+  }
+
+  /* Button hover effect */
+  button:hover {
+    border-radius: 8px;
+  }
+
+  /* Chat icon */
+  .chat-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #de5935; /* Orange color */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 9999; /* Ensure the icon is above other elements */
+  }
+
+  /* Bot reply */
+  .bot-reply {
+    margin: 10px 10px 10px 0; /* Adjust margin for left alignment */
+    padding: 10px;
+    background-color: #eca0b4; /* Light green background */
+    font-weight: 200;
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 5px 20px 20px 20px;
+    color: #333; /* Text color */
+    font-family: 'Montserrat', sans-serif; /* Use Google Font 'Poppins' */
+    font-size: 16px;
+  }
+
+  /* User input */
+  .user-input {
+    margin: 10px 0 10px 10px; /* Adjust margin for right alignment */
+    padding: 10px;
+    font-weight: 200;
+    background-color: #ffcfc5; /* Bright yellow background */
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 20px 20px 5px 20px;
+    color: #333; /* Text color */
+    font-family: 'Montserrat', sans-serif; /* Use Google Font 'Poppins' */
+    font-size: 16px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Chat icon -->
+<div class="chat-icon" id="chat-icon" onclick="toggleChatbot()">💬</div>
+
+<!-- Chatbot container -->
+<div class="chatbot-container" id="chatbot-container">
+
+  <div class="chatbot-header">
+    <div class="align">
+      <img src="th.jpeg" height="30px" width="30px">
+      <b>Amrita Vishwa Vidyapeetham</b>
+    </div>
+  </div>
+  <div class="chatbot-messages">
+    <!-- Messages will be displayed here -->
+    <!-- <b>Amrita Vishwa Vidyapeetham</b> -->
+  </div>
+  <div class="chatbot-input">
+    <input type="text" id="messageInput" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+
+  
+// Variable to track if greeting is displayed
+var isGreetingDisplayed = false;
+
+// Toggle chatbot visibility
+function toggleChatbot() {
+  var chatbotContainer = document.getElementById('chatbot-container');
+  var chatIcon = document.getElementById('chat-icon');
+  if (chatbotContainer.style.display === 'block') {
+    chatbotContainer.style.display = 'none';
+    chatIcon.style.display = 'block'; // Show the chat icon when chatbot is closed
+    // Remove event listener when chatbot is closed
+    document.removeEventListener('click', closeChatbotOutsideClick);
+  } else {
+    chatbotContainer.style.display = 'block';
+    chatIcon.style.display = 'none'; // Hide the chat icon when chatbot is opened
+    // Attach event listener to hide chatbot when clicked outside the container
+    document.addEventListener('click', closeChatbotOutsideClick);
+    // Check if greeting is already displayed
+    if (!isGreetingDisplayed) {
+      // Send greeting message
+      displayChatbotMessage('Hi, How can I help you?', true);
+      // Mark the greeting as displayed
+      isGreetingDisplayed = true;
+    }
+  }
+}
+
+// Function to close chatbot when clicked outside the container
+function closeChatbotOutsideClick(event) {
+  var chatbotContainer = document.getElementById('chatbot-container');
+  var chatIcon = document.getElementById('chat-icon');
+  if (!chatbotContainer.contains(event.target) && event.target !== chatIcon) {
+    chatbotContainer.style.display = 'none';
+    chatIcon.style.display = 'block'; // Show the chat icon when chatbot is closed
+    // Remove event listener when chatbot is closed
+    document.removeEventListener('click', closeChatbotOutsideClick);
+  }
+}
+
+// Function to handle key press events in the input field
+function handleKeyPress(event) {
+  if (event.keyCode === 13) {
+    sendMessage(); // Call sendMessage function if Enter key is pressed
+  }
+}
+
+// Function to send a message to the chatbot and receive a response
+function sendMessage() {
+  var messageInput = document.querySelector('.chatbot-input input[type="text"]');
+  var message = messageInput.value.trim();
+  if (message !== '') {
+    // displayChatbotMessage('You: ' + message);
+    displayChatbotMessage(message);
+
+    messageInput.value = '';
+    // You need to implement this function based on your chatbot API
+    // sendMessageToChatbot(message);
+  }
+}
+
+// Function to display chatbot's message in the UI
+function displayChatbotMessage(message, isBot = false) {
+  var messagesContainer = document.querySelector('.chatbot-messages');
+  var messageElement = document.createElement('div');
+  if (isBot) {
+    messageElement.classList.add('bot-reply');
+    var botIcon = document.createElement('span');
+    botIcon.textContent = '🤖';
+    botIcon.style.marginRight = '5px';
+    messageElement.appendChild(botIcon);
+  } else {
+    messageElement.classList.add('user-input');
+    var profileIcon = document.createElement('span');
+    profileIcon.textContent = '👤';
+    profileIcon.style.marginRight = '5px';
+    messageElement.appendChild(profileIcon);
+  }
+  var messageText = document.createElement('span');
+  messageText.textContent = message;
+  messageElement.appendChild(messageText);
+  messagesContainer.appendChild(messageElement);
+}
+
+
+
+</script>
+
+</body>
+</html>
